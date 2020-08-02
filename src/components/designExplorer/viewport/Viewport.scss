@@ -1,0 +1,29 @@
+.viewport-container {
+  width: 100%;
+  height: 100vh;
+
+  overflow: hidden;
+  scroll-behavior: smooth;
+  cursor: grab;
+}
+
+.viewport-zoomer {
+  // transform: translate(0, 0, 0);
+  transition: transform 200ms ease-out;
+  will-change: transform;
+
+  display: flex;
+  flex-direction: column;
+}
+.viewport-panner {
+  width: 200%;
+
+  margin-left: 10rem;
+  margin-top: 10rem;
+}
+
+.viewport-container--zooming-in {
+}
+
+.viewport-container--zooming-out {
+}
