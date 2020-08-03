@@ -1,0 +1,31 @@
+.nav-container {
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  padding: 0rem;
+
+  background-color: #fff;
+
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+.nav-list {
+  list-style: none;
+  padding-left: 0rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-link {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: #000;
+  text-decoration: none;
+}
+
+.nav-link:hover {
+  background-color: #fffcf0;
+}
+
+.nav-link--active {
+  background-color: #ffca0f !important;
+}

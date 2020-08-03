@@ -2,7 +2,7 @@
  * this componenet takes in the input controlling signal
  * from Viewport and render it on screen.
  */
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 // global variables in this component
 let mousePosition = { x: 0, y: 0 };
 let zoom = 0;
@@ -26,6 +26,7 @@ let mouseDragBeginPosition = { x: 0, y: 0 };
 // IMAGE OPTIMISATION
 let imgList = [];
 let lowFidelityImges = [];
+const paddingBetweenImages = 0;
 
 // ref to the canvas
 let canvas,
@@ -49,6 +50,33 @@ function ViewportRenderer(_canvas) {
     update: function (mousePosition, zoom, dragging) {
       updateLogic(mousePosition, zoom, dragging);
       repaintCanvas(canvas, ctx, imgList, mousePosition, zoom);
+    },
+
+    pointCameraTo: function (cameraX, cameraY) {
+      currentCameraPos.x = cameraX;
+      currentCameraPos.y = cameraY;
+    },
+
+    pointCameraToImage: function (img) {
+      const imgIndex =
+        img instanceof HTMLImageElement ? imgList.indexOf(img) : img;
+
+      if (!imgList[imgIndex]) {
+        console.warn("Can't find img index " + img);
+        return;
+      }
+
+      // calculate the center position
+      const cameraX =
+        -canvas.width / currentZoom / 2 + imgList[imgIndex].width / 2;
+
+      // calculate where the camera should scroll to
+      let cumulativeImagePos = 0;
+      for (let i = 0; i < imgIndex; i++) {
+        cumulativeImagePos += imgList[i].height + paddingBetweenImages;
+      }
+      targetCameraPos.x = cameraX;
+      targetCameraPos.y = cumulativeImagePos;
     },
   };
 }
@@ -106,8 +134,6 @@ function updateLogic(mouseScreenPosition, targetZoom, dragging) {
         y: mousePosInWorld.y - currentCameraPos.y,
       };
       mouseBeginDragPosition = mousePosInWorld;
-
-      console.log(cameraMouseOffset);
     }
 
     const currentFrameMouseOffset = {
@@ -135,7 +161,7 @@ let prevZoom = 0;
 // RENDER
 function repaintCanvas(canvas, ctx, imgs, mouseScreenPosition, zoom) {
   // clear the canvas
-  ctx.clearRect(0, 0, window.innerHeight, window.innerWidth);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // prepare transformation for camera movement transformation
   ctx.save();
@@ -151,8 +177,13 @@ function repaintCanvas(canvas, ctx, imgs, mouseScreenPosition, zoom) {
   // zoom in a point using scale and translate
   //https://stackoverflow.com/questions/2916081/zoom-in-on-a-point-using-scale-and-translate
 
-  // render images
-  renderImages(ctx, imgs, true);
+  // render images in low quality mode when there is camera movement
+  // to make the animation look smoother
+  if (zooming || isCameraMoving()) {
+    renderImages(ctx, imgs, true);
+  } else {
+    renderImages(ctx, imgs, false);
+  }
 
   // screen to world pos projection is working
 
@@ -165,8 +196,8 @@ function repaintCanvas(canvas, ctx, imgs, mouseScreenPosition, zoom) {
     ctx.fill();
 
     // reset transformation
-    ctx.restore();
   }
+  ctx.restore();
 
   // display the debug information and round to 2 deicmals
   if (DEBUG_MODE) {
@@ -198,7 +229,6 @@ function renderPos(ctx, label, value, x, y) {
 }
 
 function renderImages(ctx, imgs, lowQuality) {
-  const paddingBetweenImages = 0;
   let currentDrawY = 0;
   for (let i = 0; i < imgs.length; i++) {
     // render all the images
@@ -211,11 +241,41 @@ function renderImages(ctx, imgs, lowQuality) {
         imgs[i].height
       );
     } else {
-      ctx.drawImage(imgs[i], 0, currentDrawY);
+      // only render high quality image if the img is in bound
+      if (
+        isRectInBound(
+          0,
+          currentDrawY + paddingBetweenImages * i,
+          imgs[i].width,
+          imgs[i].height
+        )
+      ) {
+        ctx.drawImage(imgs[i], 0, currentDrawY);
+      }
     }
 
     currentDrawY += imgs[i].height + paddingBetweenImages;
   }
+}
+
+function isCameraMoving() {
+  return (
+    currentCameraVel.x.toFixed(2) != 0 || currentCameraVel.y.toFixed(2) != 0
+  );
+}
+
+function isRectInBound(x, y, w, h) {
+  let viewportWidthInWorld = canvas.width / currentZoom;
+  let viewportHeightInWorld = canvas.height / currentZoom;
+  return (
+    x < currentCameraPos.x + viewportWidthInWorld &&
+    x + w > currentCameraPos.x &&
+    y < currentCameraPos.y + viewportHeightInWorld &&
+    y + h > currentCameraPos.y
+  );
+}
+function checkCollisionRect(x, y, w, h, x2, y2, w2, h2) {
+  return x < x2 + w2 && x + w > x2 && y < y2 + h2 && y + h > y2;
 }
 
 // mapping of screen position to world position

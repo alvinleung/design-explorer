@@ -20,7 +20,7 @@ function Viewport(props) {
   // control zooming
   const ZOOM_SPEED_FACTOR = 0.02;
   const MAX_ZOOM = 1.5;
-  const MIN_ZOOM = 0.5;
+  const MIN_ZOOM = 0.2;
   const zoom = useRef(1);
 
   // control panning
@@ -32,6 +32,9 @@ function Viewport(props) {
   // the canvas element
   const [viewportPosition, setViewportPosition] = useState({ x: 0, y: 0 }); // the coordinate of the canvas element on page
   const canvasRef = useRef(null);
+
+  //sections
+  const viewportRendererRef = useRef(null);
 
   function mouseDownHandler(e) {
     // enter the moving state
@@ -93,8 +96,12 @@ function Viewport(props) {
 
     // Load the svg files
     let loadedImage = 0;
-    const imgList = props.src.map((imgUrl) => {
+    const imgList = props.sections.map((currentSection) => {
+      // section:
+      // - title:string
+      // - src:string
       const img = new Image();
+      const imgUrl = currentSection.src;
       img.src = imgUrl;
       img.addEventListener("load", () => {
         console.log("Viewport loaded image: " + imgUrl);
@@ -128,9 +135,21 @@ function Viewport(props) {
     };
     // begin the update cycle
     update();
+
+    viewportRendererRef.current = viewportRenderer;
   }, []); // no depency, make sure the code is only called once
 
-  // the only way that the canvas code can access these var :(
+  useEffect(() => {
+    //go to target section when the target section changes
+    // get target section image index
+    const targetSectionIndex = props.sections.findIndex(
+      (item) => item.title === props.targetSection
+    );
+    console.log("going to target section: " + props.targetSection);
+
+    // jump to that section
+    viewportRendererRef.current.pointCameraToImage(targetSectionIndex);
+  }, [props.targetSection]);
 
   return (
     <canvas
@@ -147,10 +166,16 @@ function Viewport(props) {
 
 // the component take in these props
 Viewport.propTypes = {
-  mousePosition: PropTypes.objectOf(PropTypes.number),
   width: PropTypes.number,
   height: PropTypes.number,
-  src: PropTypes.arrayOf(PropTypes.imgs),
+  targetSection: PropTypes.string,
+  sections: PropTypes.arrayOf(
+    PropTypes.shape({
+      title: PropTypes.string,
+      src: PropTypes.string,
+    })
+  ),
+  onZoom: PropTypes.func,
 };
 
 function clamp(value, min, max) {
