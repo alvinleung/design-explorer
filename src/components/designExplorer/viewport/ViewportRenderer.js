@@ -68,6 +68,11 @@ function ViewportRenderer(_canvas) {
       repaintCanvas(canvas, ctx, imgList, mousePosition, zoom);
     },
 
+    zoomTo: function (_targetZoom) {
+      // currentZoom = _targetZoom;
+      console.log("zooming to target: " + _targetZoom);
+    },
+
     pointCameraTo: function (_targetCameraPos) {
       targetCameraPos.x = _targetCameraPos.x;
       targetCameraPos.y = _targetCameraPos.y;
@@ -165,11 +170,6 @@ function updateLogic(mouseScreenPosition, targetZoom, dragging) {
     // also offset the target camera pos too
     targetCameraPos.x += zoomDifference.x;
     targetCameraPos.y += zoomDifference.y;
-    // currentCameraVel.x = zoomDifference.x;
-    // currentCameraVel.y = zoomDifference.y;
-
-    // targetCameraPos.x = currentCameraPos.x + currentCameraVel.x;
-    // targetCameraPos.y = currentCameraPos.y + currentCameraVel.y;
   } else {
     if (zooming) zoomEndCallback(currentZoom);
     zooming = false;

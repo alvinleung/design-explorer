@@ -27,7 +27,7 @@ function Viewport(props) {
 
   // control panning
   // const [dragging, setDragging] = useState(false);
-  const PAN_SPEED_FACTOR = 3;
+  const PAN_SPEED_FACTOR = 5;
   const dragging = useRef(false);
   const mousePosition = useRef({ x: 0, y: 0 });
 
@@ -63,17 +63,10 @@ function Viewport(props) {
 
       // set the zoom level
       zoom.current = clamp(newZoomValue, MIN_ZOOM, MAX_ZOOM);
-    } else {
-      // dragging.current = true;
-      // mousePosition.current = {
-      //   x: mousePosition.current.x - e.nativeEvent.deltaX,
-      //   y: mousePosition.current.y - e.nativeEvent.deltaY,
-      // };
-      // viewportRendererRef.current.onPanEnd(() => {
-      //   console.log("test");
-      //   dragging.current = false;
-      // });
 
+      // callback for the zoom
+      if (props.onZoom) props.onZoom(zoom.current);
+    } else {
       // pan the camera around base on the scroll
       const currentCameraPos = viewportRendererRef.current.getCurrentCameraPos();
 
@@ -213,6 +206,16 @@ function Viewport(props) {
     };
   }, [lockTrackpadPanning]);
 
+  useEffect(() => {
+    if (props.targetZoom) {
+      zoom.current = props.targetZoom;
+      mousePosition.current = {
+        x: canvasRef.current.width / 2,
+        y: canvasRef.current.height / 2,
+      };
+    }
+  }, [props.targetZoom]);
+
   return (
     <canvas
       style={{ touchAction: "none" }}
@@ -233,6 +236,7 @@ function Viewport(props) {
 Viewport.propTypes = {
   width: PropTypes.number,
   height: PropTypes.number,
+  targetZoom: PropTypes.number,
   targetSection: PropTypes.string,
   sections: PropTypes.arrayOf(
     PropTypes.shape({

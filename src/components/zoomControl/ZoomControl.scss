@@ -1,0 +1,65 @@
+$padding-vertical: 0.5rem;
+
+.zoom-control {
+  display: flex;
+  flex-direction: row;
+
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+
+  // padding: 0.5rem;
+
+  color: #777;
+  background-color: #fff;
+
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+
+  button {
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    background-color: #fff;
+    padding: $padding-vertical 00.75rem;
+  }
+
+  button:hover {
+    background-color: #ddd;
+  }
+  button:active {
+    background-color: #eee;
+  }
+
+  button.zoom-control__reset {
+    font-size: 16px;
+    width: 0rem;
+    padding: 0.25rem 0rem;
+    border: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    transition-property: width, padding;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .zoom-control__value {
+    font-size: 16px;
+
+    display: block;
+    width: 2.5rem;
+    height: 100%;
+    padding-top: $padding-vertical;
+    padding-bottom: $padding-vertical;
+
+    text-align: center;
+  }
+}
+
+.zoom-control--mutated {
+  button.zoom-control__reset {
+    width: 7rem !important;
+    padding: 0.25rem 0.25rem;
+  }
+}

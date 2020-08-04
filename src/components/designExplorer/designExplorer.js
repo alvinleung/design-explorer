@@ -4,6 +4,7 @@ import { PropTypes } from "prop-types";
 import Viewport from "./viewport";
 import SectionNavigation from "./sectionNavigation";
 import "./DesignExplorer.scss";
+import ZoomControl from "../zoomControl";
 
 // utility function for min-maxing
 function clamp(value, min, max) {
@@ -13,6 +14,7 @@ function clamp(value, min, max) {
 }
 
 function DesignExplorer() {
+  const [zoomLevel, setZoomLevel] = useState(100);
   const [viewportSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -46,6 +48,14 @@ function DesignExplorer() {
     };
   });
 
+  function viewportZoomHandler(zoom) {
+    setZoomLevel(zoom * 100);
+  }
+
+  function zoomChangeHandler(zoomLevel) {
+    setZoomLevel(zoomLevel);
+  }
+
   function windowResizeHandler() {
     // refresh the window size
     setWindowSize({
@@ -71,6 +81,7 @@ function DesignExplorer() {
   return (
     <div className="design-explorer-container">
       {/* <SectionNavigation sections={sections} currentSection={viewingSection} /> */}
+      <ZoomControl zoomLevel={zoomLevel} onZoomChange={zoomChangeHandler} />
       <div className="viewport-container">
         <Viewport
           width={viewportSize.width}
@@ -78,6 +89,8 @@ function DesignExplorer() {
           src={imgList}
           sections={sections}
           targetSection={viewingSection}
+          targetZoom={zoomLevel / 100}
+          onZoom={viewportZoomHandler}
         />
       </div>
     </div>
