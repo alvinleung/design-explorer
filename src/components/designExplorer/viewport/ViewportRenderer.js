@@ -2,7 +2,7 @@
  * this componenet takes in the input controlling signal
  * from Viewport and render it on screen.
  */
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 // global variables in this component
 let mousePosition = { x: 0, y: 0 };
 let zoom = 0;
@@ -27,6 +27,9 @@ let mouseDragBeginPosition = { x: 0, y: 0 };
 let imgList = [];
 let lowFidelityImges = [];
 const paddingBetweenImages = 0;
+const DOCUMENT_PADDING = 100;
+let documentWidth = 0;
+let documentHeight = 0;
 
 // ref to the canvas
 let canvas,
@@ -53,6 +56,7 @@ function ViewportRenderer(_canvas) {
     initialize: function (_imgList) {
       generateOptimizedImage(_imgList);
       imgList = _imgList;
+      calculateDocumentDimension(_imgList);
       _initialized = true;
     },
     isInitialized: function () {
@@ -60,7 +64,6 @@ function ViewportRenderer(_canvas) {
     },
     update: function (mousePosition, zoom, dragging) {
       updateDeltaTime();
-
       updateLogic(mousePosition, zoom, dragging);
       repaintCanvas(canvas, ctx, imgList, mousePosition, zoom);
     },
@@ -115,6 +118,18 @@ function generateOptimizedImage(imgs) {
   lowFidelityImges = imgs.map((img) => cacheLowfidelityRender(img, 0.5));
 }
 
+function calculateDocumentDimension(imgList) {
+  let fardestPointX = 0;
+  let fardestPointY = 0;
+  for (let i = 0; i < imgList.length; i++) {
+    const docFardestPointX = imgList[i].width;
+    if (docFardestPointX > fardestPointX) fardestPointX = docFardestPointX;
+    fardestPointY = fardestPointY + imgList[i].height + paddingBetweenImages;
+  }
+  documentWidth = fardestPointX;
+  documentHeight = fardestPointY;
+}
+
 let draggingMode = false;
 let cameraMouseOffset = { x: 0, y: 0 };
 let mouseBeginDragPosition = { x: 0, y: 0 };
@@ -147,9 +162,9 @@ function updateLogic(mouseScreenPosition, targetZoom, dragging) {
     currentCameraPos.x += zoomDifference.x;
     currentCameraPos.y += zoomDifference.y;
 
-    // reset the targetPos to the camera pos
-    targetCameraPos.x = currentCameraPos.x;
-    targetCameraPos.y = currentCameraPos.y;
+    // also offset the target camera pos too
+    targetCameraPos.x += zoomDifference.x;
+    targetCameraPos.y += zoomDifference.y;
     // currentCameraVel.x = zoomDifference.x;
     // currentCameraVel.y = zoomDifference.y;
 
@@ -184,13 +199,47 @@ function updateLogic(mouseScreenPosition, targetZoom, dragging) {
     draggingMode = false;
   }
 
+  // clamping the target camera pos
+  // targetCameraPos.x = clamp(
+  //   targetCameraPos.x,
+  //   -DOCUMENT_PADDING,
+  //   documentWidth + DOCUMENT_PADDING - canvas.width / currentZoom
+  // );
+  // targetCameraPos.y = clamp(
+  //   targetCameraPos.y,
+  //   -DOCUMENT_PADDING,
+  //   documentHeight - canvas.height / currentZoom + DOCUMENT_PADDING
+  // );
+  // if (targetCameraPos.y)
+
   // update update the camera velocty base on the target position
-  currentCameraVel.x = (targetCameraPos.x - currentCameraPos.x) * 0.25; // add alittle bit of trailing effect
-  currentCameraVel.y = (targetCameraPos.y - currentCameraPos.y) * 0.25; // add alittle bit of trailing effect
+  currentCameraVel.x = (targetCameraPos.x - currentCameraPos.x) * 0.2; // add alittle bit of trailing effect
+  currentCameraVel.y = (targetCameraPos.y - currentCameraPos.y) * 0.2; // add alittle bit of trailing effect
 
   // interpolate the camera position
+  // constraint the camera movement if it's within bound
   currentCameraPos.x += currentCameraVel.x * deltaTime;
   currentCameraPos.y += currentCameraVel.y * deltaTime;
+}
+
+function canMoveHorizontally() {
+  return (
+    !(currentCameraPos.x < 0 && currentCameraVel.x < 0) &&
+    !(
+      currentCameraPos.x + canvas.width / currentZoom > documentWidth &&
+      currentCameraVel.x > 0
+    )
+  );
+}
+
+function canMoveVertically() {
+  return (
+    !(currentCameraPos.y < 0 && currentCameraVel.y < 0) &&
+    !(
+      currentCameraPos.y + canvas.height / currentZoom > documentHeight &&
+      currentCameraVel.y > 0
+    )
+  );
 }
 
 let prevZoom = 0;
@@ -270,29 +319,28 @@ function renderPos(ctx, label, value, x, y) {
 function renderImages(ctx, imgs, lowQuality) {
   let currentDrawY = 0;
   for (let i = 0; i < imgs.length; i++) {
-    // render all the images
-    if (lowQuality) {
-      ctx.drawImage(
-        lowFidelityImges[i],
-        0,
-        currentDrawY,
-        imgs[i].width,
-        imgs[i].height
-      );
-    } else {
-      // only render high quality image if the img is in bound
-      if (
-        isRectInBound(
+    const isImageInBound = isRectInBound(
+      0,
+      currentDrawY + paddingBetweenImages * i,
+      imgs[i].width,
+      imgs[i].height
+    );
+    if (isImageInBound) {
+      // render all the images
+      if (lowQuality || currentZoom < 0.5) {
+        // if the zoom is too small, we don't need recalcualte the high quality
+        ctx.drawImage(
+          lowFidelityImges[i],
           0,
-          currentDrawY + paddingBetweenImages * i,
+          currentDrawY,
           imgs[i].width,
           imgs[i].height
-        )
-      ) {
+        );
+      } else {
+        // only render high quality image if the img is in bound
         ctx.drawImage(imgs[i], 0, currentDrawY);
       }
     }
-
     currentDrawY += imgs[i].height + paddingBetweenImages;
   }
 }
@@ -331,6 +379,12 @@ function worldToScreenPos(worldPos) {
     x: (worldPos.x - currentCameraPos.x) * currentZoom,
     y: (worldPos.y - currentCameraPos.y) * currentZoom,
   };
+}
+
+function clamp(value, min, max) {
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
 }
 
 export default ViewportRenderer;
