@@ -17,15 +17,17 @@ function Viewport(props) {
   const canvasWidth = props.width;
   const canvasHeight = props.height;
 
+  const [lockTrackpadPanning, setLockTrackpadPanning] = useState(false);
+
   // control zooming
-  const ZOOM_SPEED_FACTOR = 0.02;
+  const ZOOM_SPEED_FACTOR = 0.005;
   const MAX_ZOOM = 1.5;
   const MIN_ZOOM = 0.2;
   const zoom = useRef(1);
 
   // control panning
   // const [dragging, setDragging] = useState(false);
-
+  const PAN_SPEED_FACTOR = 5;
   const dragging = useRef(false);
   const mousePosition = useRef({ x: 0, y: 0 });
 
@@ -41,14 +43,6 @@ function Viewport(props) {
     e.stopPropagation();
     e.preventDefault();
 
-    // initialize the dragging parameter
-    // const viewportRect = canvasRef.current.getBoundingClientRect();
-
-    // setDragOffset({
-    //   x: e.nativeEvent.pageX - viewportRect.left - mousePosition.x,
-    //   y: e.nativeEvent.pageY - viewportRect.top - mousePosition.y,
-    // });
-
     // enter dragging mode
     dragging.current = true;
   }
@@ -59,15 +53,40 @@ function Viewport(props) {
   }
 
   function mouseWheelHandler(e) {
-    // stop the document from scrolling when the user mouse over this
-    e.nativeEvent.preventDefault();
+    // trigger pinch to zoom with "ctrl key"
+    //https://stackoverflow.com/questions/15416851/catching-mac-trackpad-zoom
 
-    // calculate zoom value
-    const newZoomValue =
-      zoom.current - e.nativeEvent.deltaY * ZOOM_SPEED_FACTOR;
-    // set the zoom level
+    if (e.nativeEvent.ctrlKey || e.nativeEvent.metaKey) {
+      // calculate zoom value
+      const newZoomValue =
+        zoom.current - e.nativeEvent.deltaY * ZOOM_SPEED_FACTOR;
 
-    zoom.current = clamp(newZoomValue, MIN_ZOOM, MAX_ZOOM);
+      // set the zoom level
+      zoom.current = clamp(newZoomValue, MIN_ZOOM, MAX_ZOOM);
+    } else {
+      // dragging.current = true;
+      // mousePosition.current = {
+      //   x: mousePosition.current.x - e.nativeEvent.deltaX,
+      //   y: mousePosition.current.y - e.nativeEvent.deltaY,
+      // };
+      // viewportRendererRef.current.onPanEnd(() => {
+      //   console.log("test");
+      //   dragging.current = false;
+      // });
+
+      // pan the camera around base on the scroll
+      const currentCameraPos = viewportRendererRef.current.getCurrentCameraPos();
+
+      viewportRendererRef.current.pointCameraTo({
+        x:
+          currentCameraPos.x +
+          (e.nativeEvent.deltaX * PAN_SPEED_FACTOR) / zoom.current,
+        y:
+          currentCameraPos.y +
+          (e.nativeEvent.deltaY * PAN_SPEED_FACTOR) / zoom.current,
+      });
+    }
+    return false;
   }
 
   function mouseMoveHandler(e) {
@@ -80,6 +99,35 @@ function Viewport(props) {
       };
     }
   }
+
+  function mouseOverHandler(e) {
+    // lock trackpad panning when the user mouse over this element
+    setLockTrackpadPanning(true);
+  }
+
+  function mouseOutHandler(e) {
+    setLockTrackpadPanning(false);
+  }
+
+  useEffect(() => {
+    function gestureStartHandler(e) {
+      e.preventDefault();
+      // when the the user start moving with the trackpad
+      // the viewport start panning
+      console.log("test");
+    }
+
+    function gestureEndHandler(e) {
+      e.preventDefault();
+    }
+    // create event listener for handling trackpad panning
+    canvasRef.current.addEventListener("touchstart", gestureStartHandler);
+    canvasRef.current.addEventListener("touchend", gestureEndHandler);
+    return () => {
+      canvasRef.current.removeEventListener("touchstart", gestureStartHandler);
+      canvasRef.current.removeEventListener("touchend", gestureEndHandler);
+    };
+  }, []);
 
   useEffect(() => {
     // calculate canvas position when state changes
@@ -151,11 +199,28 @@ function Viewport(props) {
     viewportRendererRef.current.pointCameraToImage(targetSectionIndex);
   }, [props.targetSection]);
 
+  useEffect(() => {
+    if (!lockTrackpadPanning) return;
+    const preventDefaultWheelBehaviour = (e) => {
+      // stop the document from scrolling when the user mouse over this
+      e.preventDefault();
+    };
+    window.addEventListener("wheel", preventDefaultWheelBehaviour, {
+      passive: false,
+    });
+    return () => {
+      window.removeEventListener("wheel", preventDefaultWheelBehaviour);
+    };
+  }, [lockTrackpadPanning]);
+
   return (
     <canvas
+      style={{ touchAction: "none" }}
       onMouseDown={mouseDownHandler}
       onMouseUp={mouseUpHandler}
       onMouseMove={mouseMoveHandler}
+      onMouseOver={mouseOverHandler}
+      onMouseOut={mouseOutHandler}
       onWheel={mouseWheelHandler}
       ref={canvasRef}
       width={canvasWidth}
@@ -182,6 +247,20 @@ function clamp(value, min, max) {
   if (value < min) return min;
   if (value > max) return max;
   return value;
+}
+
+// utitlitiy to detect wether its trackpad or mouse input
+// https://stackoverflow.com/questions/10744645/detect-touchpad-vs-mouse-in-javascript
+function detectTrackPad(e) {
+  var isTrackpad = false;
+  if (e.wheelDeltaY) {
+    if (Math.abs(e.wheelDeltaY) !== 120) {
+      isTrackpad = true;
+    }
+  } else if (e.deltaMode === 0) {
+    isTrackpad = true;
+  }
+  return isTrackpad;
 }
 
 export default Viewport;

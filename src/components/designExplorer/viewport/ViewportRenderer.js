@@ -32,6 +32,10 @@ const paddingBetweenImages = 0;
 let canvas,
   ctx = null;
 
+// callback functions
+let zoomEndCallback = () => {};
+let panEndCallback = () => {};
+
 // interface for the renderer
 function ViewportRenderer(_canvas) {
   // initialize the canvas
@@ -52,9 +56,16 @@ function ViewportRenderer(_canvas) {
       repaintCanvas(canvas, ctx, imgList, mousePosition, zoom);
     },
 
-    pointCameraTo: function (cameraX, cameraY) {
-      currentCameraPos.x = cameraX;
-      currentCameraPos.y = cameraY;
+    pointCameraTo: function (_targetCameraPos) {
+      targetCameraPos.x = _targetCameraPos.x;
+      targetCameraPos.y = _targetCameraPos.y;
+    },
+
+    getCurrentCameraPos: function () {
+      return {
+        x: currentCameraPos.x,
+        y: currentCameraPos.y,
+      };
     },
 
     pointCameraToImage: function (img) {
@@ -67,8 +78,7 @@ function ViewportRenderer(_canvas) {
       }
 
       // calculate the center position
-      const cameraX =
-        -canvas.width / currentZoom / 2 + imgList[imgIndex].width / 2;
+      const cameraX = -canvas.width / currentZoom / 2;
 
       // calculate where the camera should scroll to
       let cumulativeImagePos = 0;
@@ -77,6 +87,12 @@ function ViewportRenderer(_canvas) {
       }
       targetCameraPos.x = cameraX;
       targetCameraPos.y = cumulativeImagePos;
+    },
+    onPanEnd: function (callback) {
+      panEndCallback = callback;
+    },
+    onZoomEnd: function (callback) {
+      zoomEndCallback = callback;
     },
   };
 }
@@ -119,6 +135,7 @@ function updateLogic(mouseScreenPosition, targetZoom, dragging) {
     targetCameraPos.x = currentCameraPos.x + currentCameraVel.x;
     targetCameraPos.y = currentCameraPos.y + currentCameraVel.y;
   } else {
+    if (zooming) zoomEndCallback(currentZoom);
     zooming = false;
   }
 
