@@ -70,7 +70,7 @@ function DesignExplorer() {
 
   return (
     <div className="design-explorer-container">
-      <SectionNavigation sections={sections} currentSection={viewingSection} />
+      {/* <SectionNavigation sections={sections} currentSection={viewingSection} /> */}
       <div className="viewport-container">
         <Viewport
           width={viewportSize.width}

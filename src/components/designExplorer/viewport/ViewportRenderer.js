@@ -2,7 +2,7 @@
  * this componenet takes in the input controlling signal
  * from Viewport and render it on screen.
  */
-const DEBUG_MODE = false;
+const DEBUG_MODE = true;
 // global variables in this component
 let mousePosition = { x: 0, y: 0 };
 let zoom = 0;
@@ -36,6 +36,13 @@ let canvas,
 let zoomEndCallback = () => {};
 let panEndCallback = () => {};
 
+// update functions
+let deltaTime = 0;
+let realDeltaTime = 0;
+let currentUpdateTime = Date.now();
+let lastUpdateTime = currentUpdateTime;
+const TIME_SCALE = 0.1;
+
 // interface for the renderer
 function ViewportRenderer(_canvas) {
   // initialize the canvas
@@ -52,6 +59,8 @@ function ViewportRenderer(_canvas) {
       return _initialized;
     },
     update: function (mousePosition, zoom, dragging) {
+      updateDeltaTime();
+
       updateLogic(mousePosition, zoom, dragging);
       repaintCanvas(canvas, ctx, imgList, mousePosition, zoom);
     },
@@ -129,11 +138,23 @@ function updateLogic(mouseScreenPosition, targetZoom, dragging) {
     };
 
     // trasnlate the camera base on the difference
-    currentCameraVel.x = zoomDifference.x;
-    currentCameraVel.y = zoomDifference.y;
+    const cameraOffsetAmount = {
+      x: zoomDifference.x,
+      y: zoomDifference.y,
+    };
 
-    targetCameraPos.x = currentCameraPos.x + currentCameraVel.x;
-    targetCameraPos.y = currentCameraPos.y + currentCameraVel.y;
+    // tweak the camera position so that it zooms in at the mouse
+    currentCameraPos.x += zoomDifference.x;
+    currentCameraPos.y += zoomDifference.y;
+
+    // reset the targetPos to the camera pos
+    targetCameraPos.x = currentCameraPos.x;
+    targetCameraPos.y = currentCameraPos.y;
+    // currentCameraVel.x = zoomDifference.x;
+    // currentCameraVel.y = zoomDifference.y;
+
+    // targetCameraPos.x = currentCameraPos.x + currentCameraVel.x;
+    // targetCameraPos.y = currentCameraPos.y + currentCameraVel.y;
   } else {
     if (zooming) zoomEndCallback(currentZoom);
     zooming = false;
@@ -163,15 +184,13 @@ function updateLogic(mouseScreenPosition, targetZoom, dragging) {
     draggingMode = false;
   }
 
-  if (!zooming) {
-    // update camera pos, camera trail the target point if it's not zooming
-    currentCameraVel.x = (targetCameraPos.x - currentCameraPos.x) * 0.25; // add alittle bit of trailing effect
-    currentCameraVel.y = (targetCameraPos.y - currentCameraPos.y) * 0.25; // add alittle bit of trailing effect
-  }
+  // update update the camera velocty base on the target position
+  currentCameraVel.x = (targetCameraPos.x - currentCameraPos.x) * 0.25; // add alittle bit of trailing effect
+  currentCameraVel.y = (targetCameraPos.y - currentCameraPos.y) * 0.25; // add alittle bit of trailing effect
 
   // interpolate the camera position
-  currentCameraPos.x += currentCameraVel.x;
-  currentCameraPos.y += currentCameraVel.y;
+  currentCameraPos.x += currentCameraVel.x * deltaTime;
+  currentCameraPos.y += currentCameraVel.y * deltaTime;
 }
 
 let prevZoom = 0;
@@ -182,11 +201,6 @@ function repaintCanvas(canvas, ctx, imgs, mouseScreenPosition, zoom) {
 
   // prepare transformation for camera movement transformation
   ctx.save();
-
-  const zoomPivot = {
-    x: canvas.width / 2,
-    y: canvas.height / 2,
-  };
 
   // move camera
   ctx.scale(currentZoom, currentZoom);
@@ -221,11 +235,19 @@ function repaintCanvas(canvas, ctx, imgs, mouseScreenPosition, zoom) {
     renderPos(ctx, "mouse screen", mouseScreenPosition, 20, 50);
     renderPos(ctx, "camera pos", currentCameraPos, 20, 80);
     ctx.fillText("zoom " + currentZoom.toFixed(2), 20, 110);
+    ctx.fillText("fps " + Math.round(1000 / realDeltaTime), 20, 130);
   }
 }
 // ===============================================================
 // end of main cycle
 // ===============================================================
+
+function updateDeltaTime() {
+  currentUpdateTime = Date.now();
+  realDeltaTime = currentUpdateTime - lastUpdateTime;
+  deltaTime = realDeltaTime * TIME_SCALE;
+  lastUpdateTime = currentUpdateTime;
+}
 
 // pre render a low fedelity version of the image when zoom to acheive the smooth animation
 function cacheLowfidelityRender(img, scaleFactor) {

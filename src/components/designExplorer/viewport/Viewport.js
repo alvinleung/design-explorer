@@ -27,7 +27,7 @@ function Viewport(props) {
 
   // control panning
   // const [dragging, setDragging] = useState(false);
-  const PAN_SPEED_FACTOR = 5;
+  const PAN_SPEED_FACTOR = 3;
   const dragging = useRef(false);
   const mousePosition = useRef({ x: 0, y: 0 });
 
