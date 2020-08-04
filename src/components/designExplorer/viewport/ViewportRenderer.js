@@ -84,6 +84,12 @@ function ViewportRenderer(_canvas) {
         y: currentCameraPos.y,
       };
     },
+    getDocumentWidth: function () {
+      return documentWidth;
+    },
+    getDocumentHeight: function () {
+      return documentHeight;
+    },
 
     pointCameraToImage: function (img) {
       const imgIndex =
@@ -110,6 +116,12 @@ function ViewportRenderer(_canvas) {
     },
     onZoomEnd: function (callback) {
       zoomEndCallback = callback;
+    },
+    worldToScreenPos: function (worldPos) {
+      return worldToScreenPos(worldPos);
+    },
+    screenToWorldPos: function (screenPos) {
+      return screenToWorldPos(screenPos);
     },
   };
 }
@@ -199,20 +211,8 @@ function updateLogic(mouseScreenPosition, targetZoom, dragging) {
     draggingMode = false;
   }
 
-  // clamping the target camera pos
-  // targetCameraPos.x = clamp(
-  //   targetCameraPos.x,
-  //   -DOCUMENT_PADDING,
-  //   documentWidth + DOCUMENT_PADDING - canvas.width / currentZoom
-  // );
-  // targetCameraPos.y = clamp(
-  //   targetCameraPos.y,
-  //   -DOCUMENT_PADDING,
-  //   documentHeight - canvas.height / currentZoom + DOCUMENT_PADDING
-  // );
-  // if (targetCameraPos.y)
-
   // update update the camera velocty base on the target position
+
   currentCameraVel.x = (targetCameraPos.x - currentCameraPos.x) * 0.2; // add alittle bit of trailing effect
   currentCameraVel.y = (targetCameraPos.y - currentCameraPos.y) * 0.2; // add alittle bit of trailing effect
 

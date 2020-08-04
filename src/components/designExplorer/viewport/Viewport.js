@@ -17,7 +17,7 @@ function Viewport(props) {
   const canvasWidth = props.width;
   const canvasHeight = props.height;
 
-  const [lockTrackpadPanning, setLockTrackpadPanning] = useState(false);
+  const [mouseHovering, setMouseHovering] = useState(false);
 
   // control zooming
   const ZOOM_SPEED_FACTOR = 0.005;
@@ -95,11 +95,11 @@ function Viewport(props) {
 
   function mouseOverHandler(e) {
     // lock trackpad panning when the user mouse over this element
-    setLockTrackpadPanning(true);
+    setMouseHovering(true);
   }
 
   function mouseOutHandler(e) {
-    setLockTrackpadPanning(false);
+    setMouseHovering(false);
   }
 
   useEffect(() => {
@@ -193,7 +193,7 @@ function Viewport(props) {
   }, [props.targetSection]);
 
   useEffect(() => {
-    if (!lockTrackpadPanning) return;
+    if (!mouseHovering) return;
     const preventDefaultWheelBehaviour = (e) => {
       // stop the document from scrolling when the user mouse over this
       e.preventDefault();
@@ -204,18 +204,32 @@ function Viewport(props) {
     return () => {
       window.removeEventListener("wheel", preventDefaultWheelBehaviour);
     };
-  }, [lockTrackpadPanning]);
+  }, [mouseHovering]);
 
+  // this effect handle when the user
   useEffect(() => {
     if (props.targetZoom) {
       zoom.current = props.targetZoom;
-      mousePosition.current = {
-        x: canvasRef.current.width / 2,
-        y: canvasRef.current.height / 2,
-      };
+
+      // mouse is on the control, meaning that the source is come from the control
+      if (!mouseHovering) {
+        const currentCameraPos = viewportRendererRef.current.getCurrentCameraPos();
+
+        mousePosition.current = viewportRendererRef.current.worldToScreenPos({
+          x: clamp(
+            currentCameraPos.x,
+            canvasWidth / 2,
+            viewportRendererRef.current.getDocumentWidth()
+          ),
+          y: clamp(
+            currentCameraPos.y,
+            canvasHeight / 2,
+            viewportRendererRef.current.getDocumentHeight()
+          ),
+        });
+      }
     }
   }, [props.targetZoom]);
-
   return (
     <canvas
       style={{ touchAction: "none" }}
