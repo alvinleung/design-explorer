@@ -155,7 +155,7 @@ function Viewport(props) {
           console.log("All images loaded, initialize ViewportRenderer");
 
           // initialize the viewport renderer using the loaded image list
-          viewportRenderer.initialize(imgList);
+          viewportRenderer.initialize(imgList, zoom.current);
         }
       });
 
@@ -213,16 +213,22 @@ function Viewport(props) {
 
       // mouse is on the control, meaning that the source is come from the control
       if (!mouseHovering) {
-        const currentCameraPos = viewportRendererRef.current.getCurrentCameraPos();
+        // const currentCameraPos = viewportRendererRef.current.getCurrentCameraPos();
+        const currentScreenCenterInWorld = viewportRendererRef.current.screenToWorldPos(
+          {
+            x: canvasWidth / 2,
+            y: canvasHeight / 2,
+          }
+        );
 
         mousePosition.current = viewportRendererRef.current.worldToScreenPos({
           x: clamp(
-            currentCameraPos.x,
+            currentScreenCenterInWorld.x,
             canvasWidth / 2,
             viewportRendererRef.current.getDocumentWidth()
           ),
           y: clamp(
-            currentCameraPos.y,
+            currentScreenCenterInWorld.y,
             canvasHeight / 2,
             viewportRendererRef.current.getDocumentHeight()
           ),

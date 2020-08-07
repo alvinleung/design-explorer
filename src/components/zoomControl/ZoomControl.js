@@ -3,13 +3,16 @@ import PropTypes from "prop-types";
 import "./ZoomControl.scss";
 
 function ZoomControl(props) {
+  const defaultZoomLevel = props.defaultZoomLevel
+    ? props.defaultZoomLevel
+    : 100;
   const zoomLevel = Math.floor(props.zoomLevel);
   const zoomInterval = 25;
   const MAX_ZOOM = 150;
   const MIN_ZOOM = 20;
 
   function reset() {
-    if (props.onZoomChange) props.onZoomChange(100);
+    if (props.onZoomChange) props.onZoomChange(defaultZoomLevel);
   }
   function zoomIn() {
     // calculate next zoom level
@@ -29,7 +32,9 @@ function ZoomControl(props) {
   return (
     <div
       class={
-        zoomLevel == 100 ? "zoom-control" : "zoom-control zoom-control--mutated"
+        zoomLevel == defaultZoomLevel
+          ? "zoom-control"
+          : "zoom-control zoom-control--mutated"
       }
     >
       <button class="zoom-control__reset" onClick={reset}>

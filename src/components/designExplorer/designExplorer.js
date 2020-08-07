@@ -13,7 +13,10 @@ function clamp(value, min, max) {
   return value;
 }
 
-function DesignExplorer() {
+function DesignExplorer(props) {
+  const imgList = props.src;
+
+  const defaultZoomLevel = 100;
   const [zoomLevel, setZoomLevel] = useState(100);
   const [viewportSize, setWindowSize] = useState({
     width: window.innerWidth,
@@ -21,16 +24,6 @@ function DesignExplorer() {
   });
 
   const [viewingSection, setCurrentViewingSection] = useState("");
-
-  const imgList = [
-    `${process.env.PUBLIC_URL}/img/8 Viewing your tasks.svg`,
-    `${process.env.PUBLIC_URL}/img/9 Contacting a client.svg`,
-    `${process.env.PUBLIC_URL}/img/10 Contacting a helper.svg`,
-    `${process.env.PUBLIC_URL}/img/11 Leaderboard.svg`,
-    `${process.env.PUBLIC_URL}/img/12 Check in - Before.svg`,
-    `${process.env.PUBLIC_URL}/img/13 Check in - During and after.svg`,
-    `${process.env.PUBLIC_URL}/img/14 Leaving Reviews.svg`,
-  ];
 
   const sectionNames = [
     "Viewing your tasks",
@@ -81,7 +74,12 @@ function DesignExplorer() {
   return (
     <div className="design-explorer-container">
       {/* <SectionNavigation sections={sections} currentSection={viewingSection} /> */}
-      <ZoomControl zoomLevel={zoomLevel} onZoomChange={zoomChangeHandler} />
+      <div className="credit-text">Crafted with ReactJS by Alvin Leung</div>
+      <ZoomControl
+        zoomLevel={zoomLevel}
+        onZoomChange={zoomChangeHandler}
+        defaultZoomLevel={defaultZoomLevel}
+      />
       <div className="viewport-container">
         <Viewport
           width={viewportSize.width}

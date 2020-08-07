@@ -3,9 +3,18 @@ import "./App.scss";
 import DesignExplorer from "./components/designExplorer";
 
 function App() {
+  const imgList = [
+    `${process.env.PUBLIC_URL}/img/8 Viewing your tasks.svg`,
+    `${process.env.PUBLIC_URL}/img/9 Contacting a client.svg`,
+    `${process.env.PUBLIC_URL}/img/10 Contacting a helper.svg`,
+    `${process.env.PUBLIC_URL}/img/11 Leaderboard.svg`,
+    `${process.env.PUBLIC_URL}/img/12 Check in - Before.svg`,
+    `${process.env.PUBLIC_URL}/img/13 Check in - During and after.svg`,
+    `${process.env.PUBLIC_URL}/img/14 Leaving Reviews.svg`,
+  ];
   return (
-    <div className="App">
-      <DesignExplorer />
+    <div>
+      <DesignExplorer src={imgList} />
     </div>
   );
 }
