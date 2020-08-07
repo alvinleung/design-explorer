@@ -17,7 +17,7 @@ const imgList = [
 
 ReactDOM.render(
   <React.StrictMode>
-    <DesignExplorer src={imgList} />
+    <App />
   </React.StrictMode>,
   document.getElementById("root")
 );

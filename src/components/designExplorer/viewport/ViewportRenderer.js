@@ -2,7 +2,7 @@
  * this componenet takes in the input controlling signal
  * from Viewport and render it on screen.
  */
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 // global variables in this component
 let mousePosition = { x: 0, y: 0 };
 let zoom = 0;

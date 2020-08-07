@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useRef } from "react";
 import { useState, useEffect } from "react";
 import { PropTypes } from "prop-types";
 import Viewport from "./viewport";
@@ -16,14 +16,16 @@ function clamp(value, min, max) {
 function DesignExplorer(props) {
   const imgList = props.src;
 
-  const defaultZoomLevel = 100;
-  const [zoomLevel, setZoomLevel] = useState(100);
+  const defaultZoomLevel = 20;
+  const [zoomLevel, setZoomLevel] = useState(20);
   const [viewportSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
 
   const [viewingSection, setCurrentViewingSection] = useState("");
+
+  const containerRef = useRef(null);
 
   const sectionNames = [
     "Viewing your tasks",
@@ -52,8 +54,8 @@ function DesignExplorer(props) {
   function windowResizeHandler() {
     // refresh the window size
     setWindowSize({
-      width: window.innerWidth,
-      height: window.innerHeight,
+      width: containerRef.current.offsetWidth,
+      height: containerRef.current.offsetHeight,
     });
   }
 
@@ -72,7 +74,7 @@ function DesignExplorer(props) {
   }, []);
 
   return (
-    <div className="design-explorer-container">
+    <div className="design-explorer-container" ref={containerRef}>
       {/* <SectionNavigation sections={sections} currentSection={viewingSection} /> */}
       <div className="credit-text">Crafted with ReactJS by Alvin Leung</div>
       <ZoomControl

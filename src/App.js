@@ -3,6 +3,7 @@ import "./App.scss";
 import DesignExplorer from "./components/designExplorer";
 
 function App() {
+  const cols = 3;
   const imgList = [
     `${process.env.PUBLIC_URL}/img/8 Viewing your tasks.svg`,
     `${process.env.PUBLIC_URL}/img/9 Contacting a client.svg`,
@@ -14,7 +15,7 @@ function App() {
   ];
   return (
     <div>
-      <DesignExplorer src={imgList} />
+      <DesignExplorer src={imgList} cols={cols} />
     </div>
   );
 }
