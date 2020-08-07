@@ -23,39 +23,38 @@ import DesignExplorer from "./components/designExplorer";
 // );
 
 // grab all the viewer elements on html
-window.addEventListener("load", function () {
-  const designExplorerList = document.querySelectorAll(".design-explorer");
-  designExplorerList.forEach((elm) => {
-    // const srcListAttribute = elm.getAttribute("data-src").replaceAll("'", '"');
+// window.addEventListener("load", function () {
+const designExplorerList = document.querySelectorAll(".design-explorer");
+designExplorerList.forEach((elm) => {
+  // const srcListAttribute = elm.getAttribute("data-src").replaceAll("'", '"');
 
-    // also grab all the image elmeents in the
-    const allImgTag = elm.querySelectorAll("img");
+  // also grab all the image elmeents in the
+  const allImgTag = elm.querySelectorAll("img");
 
-    let srcList = [];
-    for (let i = 0; i < allImgTag.length; i++) {
-      srcList[i] = allImgTag[i].src;
-    }
+  let srcList = [];
+  for (let i = 0; i < allImgTag.length; i++) {
+    srcList[i] = allImgTag[i].src;
+  }
 
-    // const srcList = JSON.parse(srcListAttribute);
+  // const srcList = JSON.parse(srcListAttribute);
 
-    const colCountAttribute = parseInt(elm.getAttribute("data-cols") || 1);
+  const colCountAttribute = parseInt(elm.getAttribute("data-cols") || 1);
 
-    const colInitialZoomAttribute = parseInt(
-      elm.getAttribute("data-init-zoom") || 100
-    );
+  const colInitialZoomAttribute = parseInt(
+    elm.getAttribute("data-init-zoom") || 100
+  );
 
-    console.log("test");
-    ReactDOM.render(
-      <DesignExplorer
-        src={srcList}
-        cols={colCountAttribute}
-        scrollToPan={false}
-        initialZoom={colInitialZoomAttribute}
-      />,
-      elm
-    );
-  });
+  ReactDOM.render(
+    <DesignExplorer
+      src={srcList}
+      cols={colCountAttribute}
+      scrollToPan={false}
+      initialZoom={colInitialZoomAttribute}
+    />,
+    elm
+  );
 });
+// });
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

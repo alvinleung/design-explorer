@@ -23,6 +23,16 @@ function DesignExplorer(props) {
   const zoomHintTimer = useRef(null);
   const mouseInComponent = useRef(false);
 
+  // loading progress
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingText, setLoadingText] = useState("Getting ready...");
+  const loadingTextList = [
+    "Getting ready...",
+    "Cleaning up mockup...",
+    "Finalising...",
+    "Very very final.jpg",
+  ];
+
   const containerRef = useRef(null);
 
   const sectionNames = [
@@ -65,6 +75,21 @@ function DesignExplorer(props) {
   function zoomChangeHandler(zoomLevel) {
     setZoomLevel(zoomLevel);
   }
+
+  function onImageLoadingProgress(progress) {
+    shuffleLoadingText();
+    setLoadingProgress(progress);
+  }
+  function shuffleLoadingText() {
+    const pickedPhrase = Math.round(
+      Math.random() * (loadingTextList.length - 1)
+    );
+
+    // pick random progress text
+    setLoadingText(loadingTextList[pickedPhrase]);
+  }
+
+  // showing scroll to zoom hint
 
   function scrollHandler(e) {
     // if the mouse is inside and the use didnt hold down the zoom modifer key
@@ -144,17 +169,28 @@ function DesignExplorer(props) {
           onZoom={viewportZoomHandler}
           cols={props.cols ? props.cols : 1}
           scrollToPan={props.scrollToPan ? props.scrollToPan : false}
+          onProgress={onImageLoadingProgress}
         />
       </div>
       <div
         className={
-          zoomInteractionHint
+          zoomInteractionHint && loadingProgress === 100
             ? "zoom-interaction-hint"
             : "zoom-interaction-hint zoom-interaction-hint--hidden"
         }
       >
         {isWindows() && <span>Hold Ctrl and scroll to zoom in</span>}
         {isMacintosh() && <span>Hold &#8984; and scroll to zoom in</span>}
+      </div>
+      <div
+        className={
+          loadingProgress === 100
+            ? "progress-indicator progress-indicator--hidden"
+            : "progress-indicator"
+        }
+      >
+        <div className="spinner"></div>
+        <div> {loadingText}</div>
       </div>
     </div>
   );

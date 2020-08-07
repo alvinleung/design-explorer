@@ -35,6 +35,9 @@ function Viewport(props) {
   const [viewportPosition, setViewportPosition] = useState({ x: 0, y: 0 }); // the coordinate of the canvas element on page
   const canvasRef = useRef(null);
 
+  // loading state
+  const [loadingProgress, setLoadingProgress] = useState(0); // 100 is the final
+
   //sections
   const viewportRendererRef = useRef(null);
 
@@ -123,7 +126,7 @@ function Viewport(props) {
     };
   }, []);
 
-  useEffect(() => {
+  function calculateViewportPosition() {
     // calculate canvas position when state changes
     const canvasRect = canvasRef.current.getBoundingClientRect();
     setViewportPosition({
@@ -132,8 +135,15 @@ function Viewport(props) {
       x: window.scrollX + canvasRect.left,
       y: window.scrollY + canvasRect.top,
     });
-    // console.log("viewport position:");
-    // console.log(viewportPosition);
+  }
+
+  useEffect(() => {
+    window.addEventListener("load", calculateViewportPosition);
+    window.addEventListener("resize", calculateViewportPosition);
+    return () => {
+      window.removeEventListener("resize", calculateViewportPosition);
+      window.removeEventListener("load", calculateViewportPosition);
+    };
   }, []);
 
   useEffect(() => {
@@ -151,7 +161,12 @@ function Viewport(props) {
       img.src = imgUrl;
       img.addEventListener("load", () => {
         console.log("Viewport loaded image: " + imgUrl);
+
         loadedImage++;
+
+        // call back when there is update
+        if (props.onProgress)
+          props.onProgress(Math.floor((loadedImage / imgList.length) * 100));
 
         if (loadedImage === imgList.length) {
           // all the image is loaded
@@ -273,6 +288,7 @@ Viewport.propTypes = {
   ),
   cols: PropTypes.number, // specify how much columns in the layout
   onZoom: PropTypes.func,
+  onProgress: PropTypes.func,
   scrollToPan: PropTypes.bool,
 };
 
