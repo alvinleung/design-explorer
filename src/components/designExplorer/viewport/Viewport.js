@@ -5,7 +5,7 @@
  * 3 - managing the ViewportRenderer
  */
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { PropTypes } from "prop-types";
 import ViewportRenderer from "./ViewportRenderer.js";
 import "./Viewport.scss";
@@ -67,17 +67,19 @@ function Viewport(props) {
       // callback for the zoom
       if (props.onZoom) props.onZoom(zoom.current);
     } else {
-      // pan the camera around base on the scroll
-      const currentCameraPos = viewportRendererRef.current.getCurrentCameraPos();
+      if (props.scrollToPan) {
+        // pan the camera around base on the scroll
+        const currentCameraPos = viewportRendererRef.current.getCurrentCameraPos();
 
-      viewportRendererRef.current.pointCameraTo({
-        x:
-          currentCameraPos.x +
-          (e.nativeEvent.deltaX * PAN_SPEED_FACTOR) / zoom.current,
-        y:
-          currentCameraPos.y +
-          (e.nativeEvent.deltaY * PAN_SPEED_FACTOR) / zoom.current,
-      });
+        viewportRendererRef.current.pointCameraTo({
+          x:
+            currentCameraPos.x +
+            (e.nativeEvent.deltaX * PAN_SPEED_FACTOR) / zoom.current,
+          y:
+            currentCameraPos.y +
+            (e.nativeEvent.deltaY * PAN_SPEED_FACTOR) / zoom.current,
+        });
+      }
     }
     return false;
   }
@@ -107,7 +109,6 @@ function Viewport(props) {
       e.preventDefault();
       // when the the user start moving with the trackpad
       // the viewport start panning
-      console.log("test");
     }
 
     function gestureEndHandler(e) {
@@ -196,7 +197,9 @@ function Viewport(props) {
     if (!mouseHovering) return;
     const preventDefaultWheelBehaviour = (e) => {
       // stop the document from scrolling when the user mouse over this
-      e.preventDefault();
+
+      // the scrolltopan is enabled or the user is zooming in using their mouse
+      if (props.scrollToPan || e.ctrlKey || e.metaKey) e.preventDefault();
     };
     window.addEventListener("wheel", preventDefaultWheelBehaviour, {
       passive: false,
@@ -266,6 +269,7 @@ Viewport.propTypes = {
   ),
   cols: PropTypes.number, // specify how much columns in the layout
   onZoom: PropTypes.func,
+  scrollToPan: PropTypes.bool,
 };
 
 function clamp(value, min, max) {
