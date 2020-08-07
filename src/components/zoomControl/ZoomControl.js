@@ -31,17 +31,17 @@ function ZoomControl(props) {
 
   return (
     <div
-      class={
-        zoomLevel == defaultZoomLevel
+      className={
+        zoomLevel === defaultZoomLevel
           ? "zoom-control"
           : "zoom-control zoom-control--mutated"
       }
     >
-      <button class="zoom-control__reset" onClick={reset}>
+      <button className="zoom-control__reset" onClick={reset}>
         Reset Zoom
       </button>
       <button onClick={zoomIn}>+</button>
-      <div class="zoom-control__value">{zoomLevel}%</div>
+      <div className="zoom-control__value">{zoomLevel}%</div>
       <button onClick={zoomOut}>-</button>
     </div>
   );
