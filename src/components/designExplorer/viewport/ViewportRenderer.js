@@ -27,8 +27,8 @@ let mouseDragBeginPosition = { x: 0, y: 0 };
 let imgList = [];
 let lowFidelityImges = [];
 const paddingBetweenImages = 0;
-const DOCUMENT_PADDING = 100;
-let DOCUMENT_COL_COUNT = 2;
+let DOCUMENT_PADDING = 100;
+let documentColCount = 2;
 let documentWidth = 0;
 let documentHeight = 0;
 
@@ -54,7 +54,9 @@ function ViewportRenderer(_canvas) {
   ctx = canvas.getContext("2d");
 
   return {
-    initialize: function (_imgList, initialZoom) {
+    initialize: function (_imgList, _documentColCount, initialZoom) {
+      documentColCount = _documentColCount;
+
       if (initialZoom) currentZoom = initialZoom;
 
       generateOptimizedImage(_imgList);
@@ -142,7 +144,6 @@ function calculateDocumentDimension(imgList) {
   let fardestPointX = 0;
   let fardestPointY = 0;
 
-  const documentColCount = DOCUMENT_COL_COUNT;
   let currentCol = 0;
   let currentRowWidth = 0;
   let currentRowHeight = 0;
@@ -151,19 +152,18 @@ function calculateDocumentDimension(imgList) {
     const currentImageWidth = imgList[i].width;
     const currentImageHeight = imgList[i].height;
 
+    // check if it need to update the row's height
+    if (currentImageHeight > currentRowHeight)
+      currentRowHeight = currentImageHeight;
+    // increment col width
+    currentRowWidth += currentImageWidth + paddingBetweenImages;
+
     // determine whether the image is at the end of row
     if (currentCol < documentColCount - 1) {
       // if the image is not end of row...
 
-      // increment col width
-      currentRowWidth += currentImageWidth + paddingBetweenImages;
-
       // increment the col position
       currentCol++;
-
-      // check if it need to update the row's height
-      if (currentImageHeight > currentRowHeight)
-        currentRowHeight = currentImageHeight;
     } else {
       // when end of row...
 
@@ -359,8 +359,6 @@ function renderPos(ctx, label, value, x, y) {
 }
 
 function renderImages(ctx, imgs, lowQuality) {
-  const maxColCount = DOCUMENT_COL_COUNT;
-
   let currentCol = 0;
   let currentRow = 0;
 
@@ -392,15 +390,18 @@ function renderImages(ctx, imgs, lowQuality) {
       }
     }
 
-    if (currentCol < maxColCount - 1) {
+    // CALCULATE THE LAYOUT FOR NEXT IMAGE
+
+    // update the row height if necessary
+    if (imgs[i].height > currentRowHeight) currentRow = imgs[i].height;
+
+    // increment column
+    currentDrawX += imgs[i].width + paddingBetweenImages;
+
+    if (currentCol < documentColCount - 1) {
       // if not at the end of row
 
-      // increment column
-      currentDrawX += imgs[i].width + paddingBetweenImages;
       currentCol++;
-
-      // update the row height if necessary
-      if (imgs[i].height > currentRowHeight) currentRow = imgs[i].height;
     } else {
       // if reached the end of row
 

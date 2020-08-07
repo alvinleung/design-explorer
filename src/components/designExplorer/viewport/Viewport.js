@@ -155,7 +155,7 @@ function Viewport(props) {
           console.log("All images loaded, initialize ViewportRenderer");
 
           // initialize the viewport renderer using the loaded image list
-          viewportRenderer.initialize(imgList, zoom.current);
+          viewportRenderer.initialize(imgList, props.cols, zoom.current);
         }
       });
 
@@ -264,6 +264,7 @@ Viewport.propTypes = {
       src: PropTypes.string,
     })
   ),
+  cols: PropTypes.number, // specify how much columns in the layout
   onZoom: PropTypes.func,
 };
 

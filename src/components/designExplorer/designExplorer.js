@@ -89,6 +89,7 @@ function DesignExplorer(props) {
           targetSection={viewingSection}
           targetZoom={zoomLevel / 100}
           onZoom={viewportZoomHandler}
+          cols={props.cols ? props.cols : 1}
         />
       </div>
     </div>
