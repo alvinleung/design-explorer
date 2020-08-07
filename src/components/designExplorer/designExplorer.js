@@ -21,6 +21,7 @@ function DesignExplorer(props) {
   const ZOOM_HINT_TIME = 500;
   const [zoomInteractionHint, setZoomInteractionHint] = useState(false);
   const zoomHintTimer = useRef(null);
+  const mouseInComponent = useRef(false);
 
   const containerRef = useRef(null);
 
@@ -50,6 +51,13 @@ function DesignExplorer(props) {
     return navigator.platform.indexOf("Win") > -1;
   }
 
+  function mouseEnterHandler() {
+    mouseInComponent.current = true;
+  }
+  function mouseOutHandler() {
+    mouseInComponent.current = false;
+  }
+
   function viewportZoomHandler(zoom) {
     setZoomLevel(zoom * 100);
   }
@@ -59,7 +67,8 @@ function DesignExplorer(props) {
   }
 
   function scrollHandler(e) {
-    if (!e.ctrlkey || !e.metaKey) {
+    // if the mouse is inside and the use didnt hold down the zoom modifer key
+    if (mouseInComponent.current && (!e.ctrlkey || !e.metaKey)) {
       setZoomInteractionHint(true);
 
       // How do I know when I've stopped scrolling?
@@ -101,10 +110,23 @@ function DesignExplorer(props) {
       window.removeEventListener("hashchange", hashChangeHandler);
       window.removeEventListener("scroll", scrollHandler);
     };
+  }, []);
+
+  // init the viewport size base on the container size
+  useEffect(() => {
+    setWindowSize({
+      width: containerRef.current.offsetWidth,
+      height: containerRef.current.offsetHeight,
+    });
   }, [containerRef]);
 
   return (
-    <div ref={containerRef} className="design-explorer-container">
+    <div
+      ref={containerRef}
+      className="design-explorer-container"
+      onMouseEnter={mouseEnterHandler}
+      onMouseOut={mouseOutHandler}
+    >
       <div className="credit-text">Crafted with ReactJS by Alvin Leung</div>
       <ZoomControl
         zoomLevel={zoomLevel}

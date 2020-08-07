@@ -189,7 +189,7 @@ function ViewportRenderer(_canvas) {
     documentWidth = fardestPointX;
     documentHeight = fardestPointY;
 
-    console.log(documentHeight);
+    // console.log(documentHeight);
   }
 
   let draggingMode = false;

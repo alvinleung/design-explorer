@@ -85,14 +85,14 @@ function Viewport(props) {
   }
 
   function mouseMoveHandler(e) {
-    if (dragging) {
-      // grab the mouse position relative to the canvas top left
-      // and save it to the mousePosition ref
-      mousePosition.current = {
-        x: e.nativeEvent.pageX - viewportPosition.x,
-        y: e.nativeEvent.pageY - viewportPosition.y,
-      };
-    }
+    // if (dragging) {
+    // grab the mouse position relative to the canvas top left
+    // and save it to the mousePosition ref
+    mousePosition.current = {
+      x: e.nativeEvent.pageX - viewportPosition.x,
+      y: e.nativeEvent.pageY - viewportPosition.y,
+    };
+    // }
   }
 
   function mouseOverHandler(e) {
@@ -127,9 +127,13 @@ function Viewport(props) {
     // calculate canvas position when state changes
     const canvasRect = canvasRef.current.getBoundingClientRect();
     setViewportPosition({
-      x: canvasRect.left,
-      y: canvasRect.top,
+      // you need to add scroll position to get the accurate value
+      // because sometimes the page loaded on at the top, but at the middle
+      x: window.scrollX + canvasRect.left,
+      y: window.scrollY + canvasRect.top,
     });
+    // console.log("viewport position:");
+    // console.log(viewportPosition);
   }, []);
 
   useEffect(() => {
