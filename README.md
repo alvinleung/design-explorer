@@ -1,68 +1,70 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Design Explorer
 
-## Available Scripts
+A canvas implementation of Zoomable, pannable viewport for viewing your large design spread in browser, figma style!
 
-In the project directory, you can run:
+## Usage
 
-### `yarn start`
+---
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Step.1 Include the necessary JavaScript and CSS into the HTML Files. The javascript file should be include at the end of html document, NOT in the header.
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+Step.2 Example usage
 
-### `yarn test`
+```
+<div class="design-explorer" data-cols="3" data-init-zoom="30" data-zoom-hint="onScroll">
+  <img src="img/png/7-sign-up.png" alt="sign up">
+  <img src="img/png/8-setting-a-goal.png" alt="setting a goal">
+  <img src="img/png/9-creating-a-task.png" alt="creating a task">
+  <img src="img/png/10-finding-a-task.png" alt="finding a task">
+  <img src="img/png/11-viewing-your-task.png" alt="viewing your task">
+  <img src="img/png/12-contact.png" alt="contact">
+  <img src="img/png/13-accept.png" alt="accept">
+  <img src="img/png/14-cancel.png" alt="cancel">
+  <img src="img/png/15-check-in-before.png" alt="check in - before">
+  <img src="img/png/16-check-in-during-after.png" alt="check in- during, after">
+  <img src="img/png/17-payment.png" alt="payment">
+  <img src="img/png/18-leave-reviews.png" alt="leave reviews">
+  <img src="img/png/19-notification.png" alt="notification">
+</div>
+```
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Configurations
 
-### `yarn build`
+---
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### data-zoom-hint
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+Control when to show the interaction hint.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- `onScroll` > only show when the user scroll the webpage
+- ``onMouseOver` > only show when the user scroll and mouse over the viewport
+- `none` > no hints
 
-### `yarn eject`
+Default value: `none`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### data-init-zoom
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Define the initial zoom value.
+Default value: `100`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### data-cols
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Define how much columns the layout engine should aim for when displaying the images.
+Default value: `1`
 
-## Learn More
+### data-scroll-to-pan
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Determine if the viewport allow panning using the trackpad or scrolling on mouse.
+Default value: `false`
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### data-zoom-hint-duration
 
-### Code Splitting
+Determine how long should the zoom hint shows
+Default value: `1000` (1 second)
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+## TODO
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `yarn build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+- Touch Screen support
+- layout bug fix > image overlap in if it is too big
