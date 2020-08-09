@@ -18,7 +18,7 @@ function DesignExplorer(props) {
   const [viewingSection, setCurrentViewingSection] = useState("");
 
   // zoom hint message
-  const ZOOM_HINT_TIME = 500;
+  const ZOOM_HINT_TIME = props.zoomHintDuration || 1000;
   const [zoomInteractionHint, setZoomInteractionHint] = useState(false);
   const zoomHintTimer = useRef(null);
   const mouseInComponent = useRef(false);
@@ -70,6 +70,7 @@ function DesignExplorer(props) {
 
   function viewportZoomHandler(zoom) {
     setZoomLevel(zoom * 100);
+    hideZoomHintMessage();
   }
 
   function zoomChangeHandler(zoomLevel) {
@@ -89,28 +90,52 @@ function DesignExplorer(props) {
     setLoadingText(loadingTextList[pickedPhrase]);
   }
 
+  function onViewportPanHandler(e) {
+    hideZoomHintMessage();
+  }
+
+  function hideZoomHintMessage() {
+    if (zoomHintTimer.current != null) clearTimeout(zoomHintTimer.current);
+    if (zoomInteractionHint) setZoomInteractionHint(false);
+  }
+
   // showing scroll to zoom hint
 
   function scrollHandler(e) {
     // if the mouse is inside and the use didnt hold down the zoom modifer key
-    if (mouseInComponent.current && (!e.ctrlkey || !e.metaKey)) {
-      setZoomInteractionHint(true);
 
-      // How do I know when I've stopped scrolling?
-      //https://stackoverflow.com/questions/4620906/how-do-i-know-when-ive-stopped-scrolling
+    if (canShowZoomHint(true)) {
+      if (!e.ctrlkey || !e.metaKey) {
+        setZoomInteractionHint(true);
 
-      // if the timer exist already(menaing the user still scrolling wihtout zooming)
-      // show reset the timer
-      if (zoomHintTimer.current != null) clearTimeout(zoomHintTimer.current);
+        // How do I know when I've stopped scrolling?
+        //https://stackoverflow.com/questions/4620906/how-do-i-know-when-ive-stopped-scrolling
 
-      // set a timer for how long the zoom hint text display
-      zoomHintTimer.current = setTimeout(
-        () => setZoomInteractionHint(false),
-        ZOOM_HINT_TIME
-      );
-    } else {
-      setZoomInteractionHint(false);
+        // if the timer exist already(menaing the user still scrolling wihtout zooming)
+        // show reset the timer
+        if (zoomHintTimer.current != null) clearTimeout(zoomHintTimer.current);
+
+        // set a timer for how long the zoom hint text display
+        zoomHintTimer.current = setTimeout(
+          () => setZoomInteractionHint(false),
+          ZOOM_HINT_TIME
+        );
+      } else {
+        setZoomInteractionHint(false);
+      }
     }
+  }
+
+  function canShowZoomHint(currentlyScrolling) {
+    switch (props.zoomHint) {
+      case zoomHintMode.SCROLL:
+        return currentlyScrolling;
+      case zoomHintMode.MOUSE_OVER:
+        return mouseInComponent.current && currentlyScrolling;
+      case zoomHintMode.NONE:
+        return false;
+    }
+    return false;
   }
 
   function windowResizeHandler() {
@@ -170,6 +195,7 @@ function DesignExplorer(props) {
           cols={props.cols ? props.cols : 1}
           scrollToPan={props.scrollToPan ? props.scrollToPan : false}
           onProgress={onImageLoadingProgress}
+          onPan={onViewportPanHandler}
         />
       </div>
       <div
@@ -201,6 +227,13 @@ DesignExplorer.propTypes = {
   src: PropTypes.array,
   cols: PropTypes.number, // the amount of columns in the layout
   initialZoom: PropTypes.number,
+  zoomHint: PropTypes.string,
+};
+
+const zoomHintMode = {
+  SCROLL: "onScroll",
+  MOUSE_OVER: "onMouseOver",
+  NONE: "none",
 };
 
 export default DesignExplorer;

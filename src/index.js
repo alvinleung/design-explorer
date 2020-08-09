@@ -44,12 +44,18 @@ designExplorerList.forEach((elm) => {
     elm.getAttribute("data-init-zoom") || 100
   );
 
+  const zoomHintMode = elm.getAttribute("data-zoom-hint") || "none";
+  const scrollToPan = elm.getAttribute("data-scroll-to-pan") || false;
+  const zoomHintDuration = elm.getAttribute("data-zoom-hint-duration") || 1000; // 1 sec
+
   ReactDOM.render(
     <DesignExplorer
       src={srcList}
       cols={colCountAttribute}
-      scrollToPan={false}
+      scrollToPan={scrollToPan}
       initialZoom={colInitialZoomAttribute}
+      zoomHint={zoomHintMode}
+      zoomHintDuration={zoomHintDuration}
     />,
     elm
   );

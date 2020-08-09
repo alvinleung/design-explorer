@@ -35,9 +35,6 @@ function Viewport(props) {
   const [viewportPosition, setViewportPosition] = useState({ x: 0, y: 0 }); // the coordinate of the canvas element on page
   const canvasRef = useRef(null);
 
-  // loading state
-  const [loadingProgress, setLoadingProgress] = useState(0); // 100 is the final
-
   //sections
   const viewportRendererRef = useRef(null);
 
@@ -88,14 +85,16 @@ function Viewport(props) {
   }
 
   function mouseMoveHandler(e) {
-    // if (dragging) {
     // grab the mouse position relative to the canvas top left
     // and save it to the mousePosition ref
     mousePosition.current = {
       x: e.nativeEvent.pageX - viewportPosition.x,
       y: e.nativeEvent.pageY - viewportPosition.y,
     };
-    // }
+
+    if (dragging.current && props.onPan) {
+      props.onPan();
+    }
   }
 
   function mouseOverHandler(e) {
@@ -288,6 +287,7 @@ Viewport.propTypes = {
   ),
   cols: PropTypes.number, // specify how much columns in the layout
   onZoom: PropTypes.func,
+  onPan: PropTypes.func,
   onProgress: PropTypes.func,
   scrollToPan: PropTypes.bool,
 };
